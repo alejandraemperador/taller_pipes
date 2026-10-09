@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:3001/api
+@activeId = 1
+@inactiveId = 3
+
+### Inspect the initial data; replace the IDs above with the actual IDs.
+GET {{baseUrl}}/products
+
+### Valid creation: 201, stock zero is allowed.
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Pen",
+  "category": "office",
+  "stock": 0
+}
+
+### Invalid stock: 400.
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Pen",
+  "category": "office",
+  "stock": -1
+}
+
+### Unknown property: 400.
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Pen",
+  "category": "office",
+  "stock": 1,
+  "status": "inactive"
+}
+
+### Partial update of an active product: 200.
+PATCH {{baseUrl}}/products/{{activeId}}
+Content-Type: application/json
+
+{ "stock": 0 }
+
+### Invalid route parameter: 400.
+PATCH {{baseUrl}}/products/abc
+Content-Type: application/json
+
+{ "stock": 2 }
+
+### Inactive product: 409, no change saved.
+PATCH {{baseUrl}}/products/{{inactiveId}}
+Content-Type: application/json
+
+{ "stock": 10 }
+
+### Verify the inactive product is unchanged: 200.
+GET {{baseUrl}}/products/{{inactiveId}}
+
+### Valid query: 200, at most two electronics products.
+GET {{baseUrl}}/products?category=electronics&limit=2
+
+### Invalid category: 400.
+GET {{baseUrl}}/products?category=toys
+
+### Invalid limit: 400.
+GET {{baseUrl}}/products?limit=21
